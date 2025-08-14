@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 🌐 NewLand2 SPA开发服务器
 支持单页应用路由的简单HTTP服务器
