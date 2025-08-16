@@ -48,6 +48,12 @@
     --content-h4-padding: 0.1em 0em 0.1em;
     --content-paragraph-padding: 0.3em 0em;
     --content-paragraph-indent: 2em;
+    
+    /* 📐 错误页面和无内容页面样式 */
+    --content-error-padding: 2em;
+    --content-error-margin: 1em 0;
+    --content-loading-padding: 2em;
+    --content-loading-margin: 1em 0;
 }
 
 /* ------------------------------------------- 文章展示区域 ------------------------------------------ */
@@ -176,6 +182,64 @@
         color: var(--content-text-error);
         text-align: center;
         font-size: var(--content-font-size-paragraph);
+    }
+
+    /* 错误页面样式 */
+    #section-text .error-page {
+        text-align: center;
+        padding: var(--content-error-padding);
+        margin: var(--content-error-margin);
+        color: var(--content-text-paragraph);
+    }
+
+    #section-text .error-page h1,
+    #section-text .error-page h2 {
+        color: var(--content-text-error);
+        margin-bottom: 1em;
+    }
+
+    #section-text .error-page button,
+    #section-text .error-page a {
+        background-color: var(--content-text-link);
+        color: var(--content-bg-primary);
+        padding: 0.5em 1em;
+        border: none;
+        border-radius: var(--content-border-radius);
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 1em;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+    #section-text .error-page button:hover,
+    #section-text .error-page a:hover {
+        opacity: 0.8;
+    }
+
+    /* 无内容页面样式 */
+    #section-text .no-content {
+        text-align: center;
+        padding: var(--content-loading-padding);
+        margin: var(--content-loading-margin);
+        color: var(--content-text-paragraph);
+    }
+
+    #section-text .no-content h2 {
+        color: var(--content-text-h2);
+        margin-bottom: 1em;
+    }
+
+    /* 文章列表容器样式 */
+    #section-text .article-list-container {
+        padding: 1em 0;
+    }
+
+    #section-text .article-list-container h2 {
+        color: var(--content-text-h2);
+        margin-bottom: 1em;
+        padding: var(--content-h2-padding);
+        border-bottom: 2px solid var(--content-border-h1);
     }
 
     #section-text .loading {
