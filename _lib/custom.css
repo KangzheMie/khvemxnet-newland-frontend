@@ -4,7 +4,7 @@
 
 body {
     padding-top: 0.1px;
-    /* 增加一个虚线边缘，没有上下边缘 */
+
     border-left: 1px dashed var(--lesslight);
     border-right: 1px dashed var(--lesslight);
 }

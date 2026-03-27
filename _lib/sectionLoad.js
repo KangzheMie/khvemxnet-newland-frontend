@@ -8,12 +8,94 @@ const CONFIG = {
         { left: "\\[", right: "\\]", display: true }
     ]
 };
-
+// the container of the section text
 const sectionText = document.querySelector('#content #section-text');
+// Blog List Loading
+const blogListLinks = document.querySelectorAll('#header nav a');
+blogListLinks.forEach(link => {
+    link.addEventListener('click', event => {
+        const targetPath = link.getAttribute('href');
+
+        if (targetPath && targetPath.startsWith('/')) {
+            event.preventDefault(); // 阻止跳转
+            navigate(targetPath);   // 召唤路由函数去干活！
+        }
+    });
+});
+
+navigate('/');
+
+// Fuctions
+
+function navigate(path) {
+    if (path.startsWith('/blogs/category/') || path === '/blogs') {
+        getBlogList(path);
+    } else if (path === '/') {
+        loadLocalPage('./_pages/home.md');
+    } else if (path === '/about') {
+        loadLocalPage('./_pages/about.md');
+    } else {
+        console.error('Invalid path:', path);
+        sectionText.innerHTML = `<p style="color:red;">Invalid path: ${path}</p>`;
+    }
+}
+
+function bindBlogLinks() {
+    const links = document.querySelectorAll('.blog-list-item a');
+    links.forEach(link => {
+        link.addEventListener('click', event => {
+            event.preventDefault(); 
+            const blogId = link.getAttribute('data-blog-id'); 
+            if (!blogId) {
+                console.error('Blog ID not found for link:', link);
+                return;
+            }
+            console.log("Clicked blog ID:", blogId);
+            
+            getBlogContent(`/blogs/content/${blogId}`);
+        });
+    });
+}
+
+function getBlogList(apiPath){
+    sectionText.innerHTML = '<p>Loading blog list...</p>';
+    const fullUrl = CONFIG.API_BASE_URL + apiPath;
+
+    fetch(fullUrl)
+        .then(response => response.json())
+        .then(responseData => { 
+            const blogArray = responseData.data;
+
+            if (!blogArray || blogArray.length === 0) {
+                sectionText.innerHTML = '<p>Currently no blog articles available.</p>';
+                return;
+            }
+
+            // map is a method of Array
+            const htmlList = blogArray.map(blog => {
+                return `
+                    <li class="blog-list-item"> --
+                        <a href="#" data-blog-id="${blog.id}" class="blog-link">
+                        ${blog.name}</a>
+                    </li>
+                `;
+            });
+
+            // union all htmlList
+            const finalHtml = `<div class="blog-list"><ul>${htmlList.join('')}</ul></div>`;
+            sectionText.innerHTML = finalHtml;
+            bindBlogLinks();
+        })
+        .catch(error => {
+            console.error('Loading blog list failed:', error);
+            sectionText.innerHTML = `<p style="color:red;">Loading blog list failed: ${error.message}</p>`;
+        });
+}
 
 function getBlogContent(apiPath) {
-    sectionText.innerHTML = '<p>正在请求数据，请稍候...</p>';
+    sectionText.innerHTML = '<p>Loading blog content...</p>';
     const fullUrl = CONFIG.API_BASE_URL + apiPath;
+    console.log(fullUrl);
 
     fetch(fullUrl)
         .then(response => response.json())
@@ -22,34 +104,50 @@ function getBlogContent(apiPath) {
             let dataWithoutMath = data.data;
 
             dataWithoutMath = dataWithoutMath.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
-                mathBlocks.push(match); // 将行间公式加入 mathBlocks
-                return `@@MATH-${mathBlocks.length - 1}@@`; // 占位符标记·行间公式
+                mathBlocks.push(match); // find all mathBlocks in dataWithoutMath
+                return `@@MATH-${mathBlocks.length - 1}@@`; // using placeholder to replace mathBlocks
             });
             dataWithoutMath = dataWithoutMath.replace(/\$([^\$\n]+?)\$/g, (match) => {
-                mathBlocks.push(match); // 将行内公式加入 mathBlocks
-                return `@@MATH-${mathBlocks.length - 1}@@`; // 占位符标记·行内公式
+                mathBlocks.push(match); // find all inline mathBlocks in dataWithoutMath
+                return `@@MATH-${mathBlocks.length - 1}@@`; // using placeholder to replace mathBlocks
             });
 
             let html = marked.parse(dataWithoutMath);
-
             mathBlocks.forEach((math, index) => {
-                // 将列表中的公式替换回 HTML 中
-                html = html.replace(`@@MATH-${index}@@`, () => math); // 对于指定索引的公式，直接返回存储的公式
+                html = html.replace(`@@MATH-${index}@@`, () => math); // replace placeholder with mathBlocks
             });
-
             sectionText.innerHTML = html; 
             renderMathInElement(sectionText, {
                 delimiters: CONFIG.MATH_DELIMITERS
             });
+            highlightCode();
         })
         .catch(error => {
-            console.error('请求失败:', error);
-            sectionText.innerText = '请求失败: ' + error.message;
+            console.error('Loading blog content failed:', error);
+            sectionText.innerHTML = `<p style="color:red;">Loading blog content failed: ${error.message}</p>`;
+        });
+}
+
+function loadLocalPage(filePath) {
+    sectionText.innerHTML = '<p>Loading...</p>';
+    console.log(filePath);
+    
+    fetch(filePath)
+        .then(response => {
+            if (!response.ok) throw new Error('Page not found (404)');
+            return response.text();
+        })
+        .then(data => {
+            sectionText.innerHTML = marked.parse(data);
+        })
+        .catch(error => {
+            console.error('Loading failed:', error);
+            sectionText.innerHTML = `<p style="color:red;">Loading failed: ${error.message}</p>`;
         });
 }
 
 function getNormalContent(apiPath) {
-    sectionText.innerHTML = '<p>正在请求数据，请稍候...</p>';
+    sectionText.innerHTML = '<p>Loading normal content...</p>';
     const fullUrl = CONFIG.API_BASE_URL + apiPath;
 
     fetch(fullUrl)
@@ -59,24 +157,13 @@ function getNormalContent(apiPath) {
             sectionText.innerHTML = html; 
         })
         .catch(error => {
-            console.error('请求失败:', error);
-            sectionText.innerText = '请求失败: ' + error.message;
+            console.error('Loading normal content failed:', error);
+            sectionText.innerHTML = `<p style="color:red;">Loading normal content failed: ${error.message}</p>`;
         });
 }
 
-
-const navLinks = document.querySelectorAll('#header nav a');
-
-navLinks.forEach(link => {
-    link.addEventListener('click', event => {
-        // 获取用户点击的链接原本要去哪里 (比如 "/blogs", "/tags")
-        const targetPath = link.getAttribute('href');
-
-        // 如果是有效路径（比如以 "/" 开头）
-        if (targetPath && targetPath.startsWith('/')) {
-            event.preventDefault(); // 阻止跳转
-            // getBlogContent(targetPath); // 召唤通用函数去干活！
-            getNormalContent(targetPath); // 召唤通用函数去干活！
-        }
-    });
-});
+function highlightCode() {
+    if (typeof hljs !== 'undefined') {
+        hljs.highlightAll();
+    }
+}
