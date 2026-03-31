@@ -1,6 +1,10 @@
+// local environment check
+const isLocal = window.location.hostname === 'localhost';
+
 // default config
 const CONFIG = {
-    API_BASE_URL: 'http://127.0.0.1:8000/api',
+    API_BASE_URL: isLocal ? 'http://127.0.0.1:8000/api' : 'https://newland.khvemx.work:8000/api',
+    BASE_URL: isLocal ? window.location.origin : 'https://newland.khvemx.work',
     MATH_DELIMITERS: [
         { left: "$$", right: "$$", display: true },
         { left: "$", right: "$", display: false },
@@ -31,9 +35,9 @@ function navigate(path) {
     if (path.startsWith('/blogs/category/') || path === '/blogs') {
         getBlogList(path);
     } else if (path === '/') {
-        loadLocalPage('./_pages/home.md');
+        loadLocalPage(CONFIG.BASE_URL + '/_pages/home.md');
     } else if (path === '/about') {
-        loadLocalPage('./_pages/about.md');
+        loadLocalPage(CONFIG.BASE_URL + '/_pages/about.md');
     } else {
         console.error('Invalid path:', path);
         sectionText.innerHTML = `<p style="color:red;">Invalid path: ${path}</p>`;
