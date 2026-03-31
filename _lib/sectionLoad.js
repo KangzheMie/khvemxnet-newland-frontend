@@ -3,7 +3,7 @@ const isLocal = window.location.hostname === 'localhost';
 
 // default config
 const CONFIG = {
-    API_BASE_URL: isLocal ? 'http://127.0.0.1:8000/api' : 'https://newland.khvemx.work:8000/api',
+    API_BASE_URL: isLocal ? 'http://127.0.0.1:8000/api' : 'https://newland.khvemx.work/api',
     BASE_URL: isLocal ? window.location.origin : 'https://newland.khvemx.work',
     MATH_DELIMITERS: [
         { left: "$$", right: "$$", display: true },
